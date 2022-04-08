@@ -17,14 +17,22 @@ def check_leap_year(year):
     return leap_year
 
 
-def how_many_days_in_month(month):
+def how_many_days_in_month(date):
     days_in_month = INVALID_INPUT
+    month = date.strftime("%B")
+    February = 'February'
     long_months = ['January', 'March', 'May', 'July', 'August', 'October', 'December']
     short_months = ['April', 'June', 'September', 'November']
     if month in long_months:
         days_in_month = 31
     elif month in short_months:
         days_in_month = 30
+    elif month == February:
+        leap_year = check_leap_year(date.year)
+        if leap_year:
+            days_in_month = 29
+        else:
+            days_in_month = 28
     else:
         print("invalid input")
     return days_in_month
@@ -32,22 +40,11 @@ def how_many_days_in_month(month):
 
 def update_date(str_date, number):
     date = dt.datetime.strptime(str_date, '%d/%m/%Y').date()
-    February = 'February'
-    month_name = date.strftime("%B")
-    if month_name == February:
-        leap_year = check_leap_year(date.year)
-        if leap_year:
-            days_in_month = 29
-        else:
-            days_in_month = 28
-    else:
-        days_in_month = how_many_days_in_month(month_name)
-
-    day = date.day
-    month = date.month
     year = date.year
+    month = date.month
+    day = date.day
+    days_in_month = how_many_days_in_month(date)
     get_day = day + number
-
     if get_day > days_in_month:
         get_day = get_day - days_in_month
         if month == 12:
