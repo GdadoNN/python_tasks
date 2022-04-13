@@ -4,63 +4,86 @@ import datetime as dt
 INVALID_INPUT = -1
 
 
-def check_leap_year(year):
-    # All the years that are perfectly divisible by 4 are called Leap years except the century years.
+def get_feb_days(year):
+    # loop year means
+    # the year divided by 4 but not in 100,
+    # the year divided by 400
     if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
-        # because is a leap year February month has 29 days.
-        print(year, " is a leap year")
-        leap_year = True
+        return 29
     else:
-        # not leap year means February has only 28 days.
-        print(year, " is not a leap year")
-        leap_year = False
-    return leap_year
+        return 28
 
 
-def how_many_days_in_month(date):
-    days_in_month = INVALID_INPUT
+def get_next_month_date(date, months_map):
+    if (date.month + 1) == 13:
+        cur_year_feb = get_feb_days(date.year + 1)
+        months_map['February'] = int(cur_year_feb)
+        return date.replace(day=1, month=1, year=date.year + 1)
+    return date.replace(day=1, month=date.month + 1)
+
+
+def update_last_month(date, number):
+    return date.replace(day=number, month=date.month)
+
+
+def update_days(reset_date, months_map, number):
+    month = reset_date.strftime("%B")
+    num_days_in_month = months_map.get(month)
+    # num_days_in_month = num_days_in_month - 1
+    if num_days_in_month > number:
+        curr_date = update_last_month(reset_date, number)
+        number = 0
+        return curr_date, number
+    number = number - num_days_in_month
+    reset_date = get_next_month_date(reset_date, months_map)
+    return reset_date, number
+
+
+def how_many_days_in_month(date, number):
+    long = 31
+    short = 30
     month = date.strftime("%B")
-    February = 'February'
-    long_months = ['January', 'March', 'May', 'July', 'August', 'October', 'December']
-    short_months = ['April', 'June', 'September', 'November']
-    if month in long_months:
-        days_in_month = 31
-    elif month in short_months:
-        days_in_month = 30
-    elif month == February:
-        leap_year = check_leap_year(date.year)
-        if leap_year:
-            days_in_month = 29
-        else:
-            days_in_month = 28
-    else:
-        print("invalid input")
-    return days_in_month
+    months_map = {
+        'January': long,
+        'February': get_feb_days(date.year),
+        'March': long,
+        'April': short,
+        'May': long,
+        'July': long,
+        'June': short,
+        'August': long,
+        'September': short,
+        'October': long,
+        'November': short,
+        'December': long
+    }
+
+    # Today
+    current_day_in_month = date.day
+    # Get number of days in month by month
+    num_days_in_month = months_map.get(month)
+    # number of days in month - today date equal the amount of days left to end the month.
+    days_left_in_month = num_days_in_month - current_day_in_month
+    # create future date at next month (1.X) if next month is in next year += to the year and make month at (1.1)
+    number = number - days_left_in_month
+    reset_date = get_next_month_date(date, months_map)
+    while number > 0:
+        reset_date, number = update_days(reset_date, months_map, number)
+
+    return reset_date
 
 
 def update_date(str_date, number):
     date = dt.datetime.strptime(str_date, '%d/%m/%Y').date()
-    year = date.year
-    month = date.month
-    day = date.day
-    days_in_month = how_many_days_in_month(date)
-    get_day = day + number
-    if get_day > days_in_month:
-        get_day = get_day - days_in_month
-        if month == 12:
-            year += 1
-            month = 1
-        else:
-            month += 1
+    new_date = how_many_days_in_month(date, number)
 
-    date = str(get_day) + "/" + str(month) + "/" + str(year)
+    date = str(new_date.day) + "/" + str(new_date.month) + "/" + str(new_date.year)
     date = dt.datetime.strptime(date, '%d/%m/%Y').date()
-
     return date
 
 
 if __name__ == "__main__":
-    str_date = '25/12/2020'
-    number = 8
+    str_date = '2/12/2020'
+    number = 90
     date = update_date(str_date, number)
     print(date)
